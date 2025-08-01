@@ -5,7 +5,7 @@
     <field name="model">res.partner</field>
     <field name="inherit_id" ref="base.view_partner_form"/>
     <field name="arch" type="xml">
-ante
+
       <!-- 1️⃣ Nombre separado -->
       <xpath expr="//field[@name='name']" position="before">
         <group string="Nombre">
@@ -40,6 +40,11 @@ ante
           <field name="amicar_activity_type_id"/>
           <field name="employment_date"/>
         </group>
+      </xpath>
+      <!-- 3️⃣ NUEVO CAMPO PARA DOCUMENTOS -->
+      <xpath expr="//field[@name='comment']" position="after">
+        <!-- <field name="document_links" nolabel="1" class="o_inline"/> -->
+        <field name="document_links" nolabel="1" readonly="1"/>
       </xpath>
     </field>
   </record>

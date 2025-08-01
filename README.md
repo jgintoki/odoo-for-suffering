@@ -122,10 +122,7 @@ Una vez que tu instancia de Odoo esté en funcionamiento, sigue estos pasos para
 docker compose run --rm web \
   odoo -d odoo -i base --stop-after-init
 
-sudo docker compose run --rm web \
-  odoo -d odoo \
-       -u client_basic_params \
-       --stop-after-init
+sudo docker compose run --rm web \ odoo -d odoo \ -u client_basic_params \ --stop-after-init
 
 Iniciar db
 docker compose run --rm web \

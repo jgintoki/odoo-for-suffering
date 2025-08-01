@@ -1,5 +1,5 @@
 # addons/tu_modulo/models/res_partner.py
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -46,6 +46,19 @@ class ResPartner(models.Model):
 
     employment_date = fields.Date(string='Fecha de Ingreso')
 
+    document_ids = fields.One2many(
+        'amicar.partner.document',
+        'partner_id',
+        string='Documentos',
+    )
+
+    document_links = fields.Html(
+        string='Documentos',
+        compute='_compute_document_links',
+        sanitize=False,
+        readonly=True,
+    )
+    
     # Mantener «name» (el nombre completo) sincronizado
     @api.onchange('first_name', 'last_name_father', 'last_name_mother')
     def _onchange_split_name(self):
@@ -86,3 +99,32 @@ class ResPartner(models.Model):
                   ('last_name_mother', operator, name)]
         return super()._name_search(name, args + domain, operator, limit, name_get_uid=name_get_uid)
 
+    @api.depends('document_ids')
+    def _compute_document_links(self):
+        """
+        Renderiza algo como:
+        <a href="http://.../file1.pdf" target="_blank" class="badge badge-primary me-1">
+            1 - Contrato
+        </a>
+        """
+        for partner in self:
+            tags = []
+            for idx, doc in enumerate(partner.document_ids, start=1):
+                # ► Etiqueta a mostrar
+                label = doc.document_type or doc.name or _('Documento')
+
+                # ► URL a la que apunta
+                href = (
+                    doc.url
+                    or (f"/download/{doc.download_uuid}" if doc.download_uuid else "#")
+                )
+
+                # ► Construir el tag
+                tags.append(
+                    f'<a href="{href}" target="_blank" '
+                    f'class="badge badge-primary me-1">{idx} - {label}</a>'
+                )
+
+            partner.document_links = (
+                "<div>" + " ".join(tags) + "</div>" if tags else False
+            )

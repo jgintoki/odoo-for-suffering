@@ -1,7 +1,7 @@
 # __manifest__.py
 {
     'name': 'Client Basic Parameters',
-    'version': '1.3',
+    'version': '1.4',
     'summary': 'Basic parameters for client management',
     'sequence': 10,
     'description': """
@@ -18,6 +18,7 @@
     'views': [],
     'installable': True,
     'application': True,
+    'post_init_hook': '_update_partner_names',
     'auto_install': False,
     'license': 'LGPL-3',
     "author": "jjcmjavascript",
