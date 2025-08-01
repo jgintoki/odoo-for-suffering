@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_amicar_activity_type_user,amicar.activity.type user,model_amicar_activity_type,base.group_user,1,0,0,0
+access_amicar_activity_type_manager,amicar.activity.type manager,model_amicar_activity_type,base.group_partner_manager,1,1,1,1
+
+# ─── ACLS PARA amicar.partner.document ───────────────────────────────────────
+access_amicar_partner_doc_user,amicar.partner.document user,model_amicar_partner_document,base.group_user,1,0,0,0
+access_amicar_partner_doc_manager,amicar.partner.document manager,model_amicar_partner_document,base.group_partner_manager,1,1,1,1

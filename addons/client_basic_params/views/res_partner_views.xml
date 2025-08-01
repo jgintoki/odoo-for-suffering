@@ -1,0 +1,46 @@
+<!-- views/res_partner_views.xml -->
+<odoo>
+  <record id="view_partner_form_split_name" model="ir.ui.view">
+    <field name="name">res.partner.form.split.name</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form"/>
+    <field name="arch" type="xml">
+ante
+      <!-- 1️⃣ Nombre separado -->
+      <xpath expr="//field[@name='name']" position="before">
+        <group string="Nombre">
+          <field name="first_name"/>
+          <field name="last_name_father"/>
+          <field name="last_name_mother"/>
+        </group>
+      </xpath>
+
+      <!-- 1.1  Ocultar el campo `name` original -->
+      <xpath expr="//field[@name='name']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+
+      <!-- 2️⃣ NUEVOS GRUPOS  -->
+      <xpath expr="//sheet/group" position="after">
+        <!-- ── Antecedentes del Cliente ── -->
+        <group string="Antecedentes del Cliente" colspan="4">
+          <field name="birthdate_date"/>
+          <field name="nationality_id"/>
+          <field name="gender"/>
+          <!-- <field name="state_id"/>
+          <field name="comuna_id"/> -->
+          <!-- <field name="street"/> -->
+          <field name="marital_status"/>
+          <field name="marital_regime"/>
+        </group>
+
+        <!-- ANTECEDENTES DE ACTIVIDAD -->
+        <group string="Antecedentes de Actividad" colspan="4">
+          <field name="worker_type"/>
+          <field name="amicar_activity_type_id"/>
+          <field name="employment_date"/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+</odoo>

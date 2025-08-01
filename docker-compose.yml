@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:17.5-alpine3.22
+    restart: always
+    environment:
+      POSTGRES_DB: odoo
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    ports:
+      - "5439:5432"
+    networks:
+      - odoo-net
+
+  web:
+    image: odoo:18.0
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./addons:/mnt/extra-addons
+      - ./odoo.conf:/etc/odoo/odoo.conf
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    networks:
+      - odoo-net
+    command: >
+      /usr/bin/odoo -c /etc/odoo/odoo.conf --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
+networks:
+  odoo-net:
+volumes:
+  odoo-db-data:
+  odoo-web-data:

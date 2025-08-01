@@ -1,0 +1,15 @@
+<!-- views/activity_type_views.xml -->
+<odoo>
+  <record id="view_activity_type_list" model="ir.ui.view">
+    <field name="name">amicar.activity.type.list</field>
+    <field name="model">amicar.activity.type</field>
+
+    <!-- 👇  El nodo raíz ahora es <list>, no <tree> -->
+    <field name="arch" type="xml">
+      <list>
+        <field name="name"/>
+        <field name="active"/>
+      </list>
+    </field>
+  </record>
+</odoo>
