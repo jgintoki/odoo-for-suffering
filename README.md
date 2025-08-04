@@ -129,8 +129,11 @@ sudo docker compose run --rm web \
 
 Iniciar db
 docker compose run --rm web \
-  odoo -d odoo -i base --stop-after-init \
-  --without-demo=all --load-language=es_CL
+  odoo -d odoo \
+       -i base,client_basic_params \
+       --without-demo=all \
+       --load-language=es_CL \
+       --stop-after-init
 
 ### Borrar todo 
  1 - Para y elimina contenedores + volúmenes del compose actual
