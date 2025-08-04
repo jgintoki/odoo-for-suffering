@@ -1,14 +1,16 @@
-
 import logging
 
 _logger = logging.getLogger(__name__)
 
-def _update_partner_names(cr, registry):
+def _update_partner_names(env):
     """
     Intenta rellenar los campos first_name para los registros existentes
     tomando la primera palabra del campo 'name'.
     """
     _logger.info("Iniciando actualización de nombres de partners para client_basic_params.")
+    
+    # Obtenemos el cursor (cr) del entorno (env)
+    cr = env.cr
     
     # Desactivamos el onchange para evitar problemas de sincronización
     cr.execute("""
