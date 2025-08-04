@@ -39,13 +39,14 @@
         </group>
       </xpath>
 
-      <!-- 3️⃣ DOCUMENTOS en “Notas internas” -->
-      <xpath expr="//page[@name='internal_notes']" position="inside">
-        <separator string="Documentos"/>
-        <field name="document_links"
-               nolabel="1"
-               readonly="1"
-               widget="html"/>
+      <!-- 3️⃣ PESTAÑA “Documentos” -->
+      <xpath expr="//page[@name='internal_notes']" position="after">
+        <page string="Documentos" name="documents">
+          <field name="document_links"
+                 nolabel="1"
+                 readonly="1"
+                 widget="html"/>
+        </page>
       </xpath>
 
     </field>
