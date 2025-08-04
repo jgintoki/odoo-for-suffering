@@ -49,7 +49,7 @@ class ResPartner(models.Model):
     document_ids = fields.One2many(
         'amicar.partner.document',
         'partner_id',
-        string='Documentos (ids)',
+        string='Documentos',
     )
 
     document_links = fields.Html(
