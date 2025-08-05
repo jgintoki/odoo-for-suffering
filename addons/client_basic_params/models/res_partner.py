@@ -102,29 +102,34 @@ class ResPartner(models.Model):
     @api.depends('document_ids')
     def _compute_document_links(self):
         """
-        Renderiza algo como:
-        <a href="http://.../file1.pdf" target="_blank" class="badge badge-primary me-1">
-            1 - Contrato
-        </a>
+        Ejemplo de salida:
+
+        <ul class="oe_inline">
+            <li><a …>1 - Contrato</a></li>
+            <li><a …>2 - Póliza</a></li>
+        </ul>
         """
+        
         for partner in self:
-            tags = []
+            items = []
+
             for idx, doc in enumerate(partner.document_ids, start=1):
-                # ► Etiqueta a mostrar
+                # ► Texto visible
                 label = doc.document_type or doc.name or _('Documento')
 
-                # ► URL a la que apunta
+                # ► URL
                 href = (
                     doc.url
                     or (f"/download/{doc.download_uuid}" if doc.download_uuid else "#")
                 )
 
-                # ► Construir el tag
-                tags.append(
-                    f'<a href="{href}" target="_blank" '
-                    f'class="badge badge-primary me-1">{idx} - {label}</a>'
+                # ► LI con el enlace
+                items.append(
+                    f'<li><a href="{href}" target="_blank">'
+                    f'{idx} - {label}</a></li>'
                 )
 
+            # ► UL que agrupa todo
             partner.document_links = (
-                "<div>" + " ".join(tags) + "</div>" if tags else False
+                f'<ul class="oe_inline">{"".join(items)}</ul>' if items else False
             )

@@ -1,7 +1,7 @@
 # __manifest__.py
 {
     'name': 'Client Basic Parameters',
-    'version': '1.4',
+    'version': '1.5',
     'summary': 'Basic parameters for client management',
     'sequence': 10,
     'description': """
