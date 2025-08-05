@@ -18,7 +18,6 @@
     'views': [],
     'installable': True,
     'application': True,
-    'post_init_hook': '_update_partner_names',
     'auto_install': False,
     'license': 'LGPL-3',
     "author": "jjcmjavascript",

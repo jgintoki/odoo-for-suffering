@@ -102,34 +102,43 @@ class ResPartner(models.Model):
     @api.depends('document_ids')
     def _compute_document_links(self):
         """
-        Ejemplo de salida:
-
-        <ul class="oe_inline">
-            <li><a …>1 - Contrato</a></li>
-            <li><a …>2 - Póliza</a></li>
-        </ul>
+        Muestra **máx. 1 documento por tipo**, tomando el más reciente
+        (created_by_at || created_at).  Renderiza como <ul><li>…</li></ul>
         """
-        
+        # Helper para convertir la fecha (str o datetime) a objeto datetime
+        def _to_dt(value):
+            if not value:
+                return fields.Datetime.now()
+            if isinstance(value, fields.Datetime):
+                return value
+            # value viene como str ISO-8601 ('2023-10-01T12:00:00')
+            value = value.replace('T', ' ')
+            return fields.Datetime.from_string(value)
+
         for partner in self:
+            latest_by_type = {}
+
+            # 1⃣  Ordena por fecha DESC
+            docs_sorted = sorted(
+                partner.document_ids,
+                key=lambda d: _to_dt(d.created_by_at or d.created_at),
+                reverse=True,
+            )
+
+            # 2⃣  Guarda sólo el primero de cada tipo
+            for doc in docs_sorted:
+                doc_type = doc.document_type or _('Sin tipo')
+                if doc_type not in latest_by_type:
+                    latest_by_type[doc_type] = doc
+
+            # 3⃣  Renderiza <ul><li>…</li></ul>
             items = []
+            for idx, (doc_type, doc) in enumerate(latest_by_type.items(), start=1):
+                href = doc.url or (f"/download/{doc.download_uuid}"
+                                   if doc.download_uuid else "#")
+                label = f"{idx} - {doc_type}"
+                items.append(f'<li><a href="{href}" target="_blank">{label}</a></li>')
 
-            for idx, doc in enumerate(partner.document_ids, start=1):
-                # ► Texto visible
-                label = doc.document_type or doc.name or _('Documento')
-
-                # ► URL
-                href = (
-                    doc.url
-                    or (f"/download/{doc.download_uuid}" if doc.download_uuid else "#")
-                )
-
-                # ► LI con el enlace
-                items.append(
-                    f'<li><a href="{href}" target="_blank">'
-                    f'{idx} - {label}</a></li>'
-                )
-
-            # ► UL que agrupa todo
             partner.document_links = (
-                f'<ul class="oe_inline">{"".join(items)}</ul>' if items else False
+                f"<ul>{''.join(items)}</ul>" if items else False
             )
