@@ -59,6 +59,13 @@ class ResPartner(models.Model):
         readonly=True,
     )
     
+    latest_document_ids = fields.Many2many(
+        comodel_name='amicar.partner.document',
+        compute='_compute_latest_documents',
+        string='Documentos recientes (1 por tipo)',
+        store=False,
+    )
+
     # Mantener «name» (el nombre completo) sincronizado
     @api.onchange('first_name', 'last_name_father', 'last_name_mother')
     def _onchange_split_name(self):
@@ -99,29 +106,55 @@ class ResPartner(models.Model):
                   ('last_name_mother', operator, name)]
         return super()._name_search(name, args + domain, operator, limit, name_get_uid=name_get_uid)
 
-    @api.depends('document_ids')
-    def _compute_document_links(self):
-        """
-        Muestra **máx. 1 documento por tipo**, tomando el más reciente
-        (created_by_at || created_at).  Renderiza como <ul><li>…</li></ul>
-        """
-        # Helper para convertir la fecha (str o datetime) a objeto datetime
-        def _to_dt(value):
-            if not value:
+    # -----------------------------------------------------------------------
+    # Helper que normaliza cualquier fecha a objeto datetime
+    # -----------------------------------------------------------------------
+    @staticmethod
+    def _to_datetime(value):
+        if not value:
                 return fields.Datetime.now()
-            if isinstance(value, fields.Datetime):
-                return value
-            # value viene como str ISO-8601 ('2023-10-01T12:00:00')
-            value = value.replace('T', ' ')
-            return fields.Datetime.from_string(value)
+        if isinstance(value, fields.Datetime):
+            return value
+        # Aceptar formato ISO con 'T'
+        return fields.Datetime.from_string(value.replace('T', ' '))
 
+    # -----------------------------------------------------------------------
+    # Cálculo del listado único por tipo, más reciente
+    # -----------------------------------------------------------------------
+    @api.depends('document_ids', 'document_ids.created_by_at', 'document_ids.created_at')
+    def _compute_latest_documents(self):
         for partner in self:
+            latest_by_type = {}
+            for doc in partner.document_ids:
+                dtype = doc.document_type or _('Sin tipo')
+                doc_date = self._to_datetime(doc.created_by_at or doc.created_at)
+                # mantén sólo el más nuevo por tipo
+                if (dtype not in latest_by_type) or (doc_date > latest_by_type[dtype][1]):
+                    latest_by_type[dtype] = (doc, doc_date)
+
+            partner.latest_document_ids = partner.env['amicar.partner.document'].browse(
+                [tpl[0].id for tpl in latest_by_type.values()]
+            )
+
+    # -----------------------------------------------------------------------
+    # links HTML (ya depurado para lista <ul><li>)
+    # -----------------------------------------------------------------------
+    @api.depends('latest_document_ids')
+    def _compute_document_links(self):
+        for partner in self:
+            lis = []
+            for idx, doc in enumerate(partner.latest_document_ids, 1):
+                label = doc.document_type or doc.name or _('Documento')
+                href = doc.url or (f"/download/{doc.download_uuid}" if doc.download_uuid else "#")
+                lis.append(f'<li><a href="{href}" target="_blank">{idx} - {label}</a></li>')
+            partner.document_links = f"<ul>{''.join(lis)}</ul>" if lis else False
+
             latest_by_type = {}
 
             # 1⃣  Ordena por fecha DESC
             docs_sorted = sorted(
                 partner.document_ids,
-                key=lambda d: _to_dt(d.created_by_at or d.created_at),
+                key=lambda d: self._to_datetime(d.created_by_at or d.created_at),
                 reverse=True,
             )
 
