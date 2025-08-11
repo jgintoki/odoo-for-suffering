@@ -4,52 +4,63 @@ from odoo import models, fields, api, _
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    first_name = fields.Char(string='Nombre', required=True)
-    last_name_father = fields.Char(string='Apellido paterno')
-    last_name_mother = fields.Char(string='Apellido materno')
+    # -- Campos originales de res.partner
+    mobile = fields.Char(
+        string='Celular',
+        tracking=True,        
+        help='Teléfono celular del contacto'
+    )
+
+    # -- Campos personalizados para el cliente
+    first_name = fields.Char(string='Nombre', required=True, tracking=True, help='Nombre del cliente')
+    last_name_father = fields.Char(string='Apellido paterno', tracking=True, help='Apellido paterno del cliente')
+    last_name_mother = fields.Char(string='Apellido materno', tracking=True, help='Apellido materno del cliente')
 
     # -- Antecedentes del Cliente
     gender = fields.Selection([
         ('male', 'Masculino'),
         ('female', 'Femenino'),
         ('other', 'Otro'),
-    ], string='Sexo')
+    ], string='Sexo', tracking=True)
 
-    birthdate_date = fields.Date(string='Fecha de Nacimiento')
-    
+
+    birthdate_date = fields.Date(string='Fecha de Nacimiento', tracking=True)
+
     nationality_id = fields.Many2one(
-        'res.country', string='Nacionalidad')
+        'res.country', string='Nacionalidad', tracking=True)
 
     marital_status = fields.Selection([
         ('single', 'Soltero(a)'),
         ('married', 'Casado(a)'),
         ('divorced', 'Divorciado(a)'),
         ('widowed', 'Viudo(a)'),
-    ], string='Estado Civil')
+    ], string='Estado Civil', tracking=True)
 
     marital_regime = fields.Selection([
         ('sep_assets', 'Separación de bienes'),
         ('community_property', 'En comunidad de bienes'),
         ('participation_gains', 'Participación de ganancias'),
-    ], string='Reg. Matrimonial')
+    ], string='Reg. Matrimonial', tracking=True)
 
     # -- Antecedentes de Actividad
     worker_type = fields.Selection([
         ('dependent', 'Dependiente'),
         ('independent', 'Independiente'),
-    ], string='Tipo de Trabajador')
+    ], string='Tipo de Trabajador', tracking=True)
 
     amicar_activity_type_id = fields.Many2one(
         'amicar.activity.type',
-        string='Tipo de Actividad Amicar'
+        string='Tipo de Actividad Amicar', tracking=True
     )
 
-    employment_date = fields.Date(string='Fecha de Ingreso')
+    employment_date = fields.Date(string='Fecha de Ingreso', tracking=True)
 
     document_ids = fields.One2many(
         'amicar.partner.document',
         'partner_id',
         string='Documentos',
+        help='Documentos asociados al cliente',
+        tracking=True,
     )
 
     document_links = fields.Html(
@@ -57,6 +68,8 @@ class ResPartner(models.Model):
         compute='_compute_document_links',
         sanitize=False,
         readonly=True,
+        help='Lista de documentos asociados al cliente, con enlaces para descargar.',
+        tracking=True,
     )
     
     latest_document_ids = fields.Many2many(
@@ -64,6 +77,8 @@ class ResPartner(models.Model):
         compute='_compute_latest_documents',
         string='Documentos recientes (1 por tipo)',
         store=False,
+        help='Lista de documentos más recientes por tipo, para mostrar en vistas.',
+        tracking=True,
     )
 
     # Mantener «name» (el nombre completo) sincronizado

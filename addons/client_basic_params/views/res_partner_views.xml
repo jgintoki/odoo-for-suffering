@@ -1,7 +1,6 @@
 <!-- views/res_partner_views.xml -->
 <odoo>
   <record id="view_partner_form_split_name" model="ir.ui.view">
-    <field name="name">res.partner.form.split.name</field>
     <field name="model">res.partner</field>
     <field name="inherit_id" ref="base.view_partner_form"/>
     <field name="arch" type="xml">
@@ -9,16 +8,37 @@
       <!-- 1️⃣ Nombre separado -->
       <xpath expr="//field[@name='name']" position="before">
         <group string="Nombre">
-          <field name="first_name"/>
-          <field name="last_name_father"/>
-          <field name="last_name_mother"/>
+            <field name="first_name" placeholder="Nombre"/>
+            <div class="o_row">
+                <div class="o_col-6">
+                    <field name="last_name_father" placeholder="Apellido Paterno"/>
+                </div>
+                <div class="o_col-6">
+                    <field name="last_name_mother" placeholder="Apellido Materno"/>
+                </div>
+            </div>
         </group>
       </xpath>
 
-      <!-- 1.1 Ocultar el campo `name` original -->
+      <!-- 1.1 Ocultar el campo  -->
       <xpath expr="//field[@name='name']" position="attributes">
         <attribute name="invisible">1</attribute>
       </xpath>
+      <xpath expr="//field[@name='function']" position="attributes">
+        <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='website']" position="attributes">
+          <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='title']" position="attributes">
+          <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='category_id']" position="attributes">
+          <attribute name="invisible">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='name']" position="replace"/>
+      <!-- <xpath expr="//header//field[@name='name']" position="replace"/> -->
+      <xpath expr="//sheet//group/field[@name='name']" position="replace"/>
 
       <!-- 2️⃣ NUEVOS GRUPOS -->
       <xpath expr="//sheet/group" position="after">
