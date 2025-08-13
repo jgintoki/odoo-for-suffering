@@ -8,6 +8,8 @@ class AmicarPartnerDocument(models.Model):
     url = fields.Char(string='Document URL', required=False)
     download_uuid = fields.Char(string='Download UUID', required=False)
     document_type= fields.Char(string='Document Type', required=False)
+    source= fields.Char(string='Document Source', required=False)
+    signed= fields.Boolean(string='Signed', default=False, required=False)
 
     created_by_name = fields.Char(string='Created By Name', required=False)
     created_by_vat = fields.Char(string='Created By VAT', required=False)
