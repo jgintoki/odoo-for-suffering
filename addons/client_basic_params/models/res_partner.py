@@ -1,4 +1,5 @@
 # addons/tu_modulo/models/res_partner.py
+from datetime import datetime, timezone
 from odoo import models, fields, api, _
 
 class ResPartner(models.Model):
@@ -124,14 +125,52 @@ class ResPartner(models.Model):
     # -----------------------------------------------------------------------
     # Helper que normaliza cualquier fecha a objeto datetime
     # -----------------------------------------------------------------------
+
     @staticmethod
     def _to_datetime(value):
+        """
+        Acepta:
+        - None
+        - datetime.datetime
+        - 'YYYY-MM-DD HH:MM:SS' (formato servidor)
+        - ISO: '2023-10-01T12:00:00.698Z' o con offset
+        Devuelve datetime naive en UTC (lo que espera Odoo).
+        """
         if not value:
-                return fields.Datetime.now()
-        if isinstance(value, fields.Datetime):
+            return fields.Datetime.now()
+
+        if isinstance(value, datetime):
             return value
-        # Aceptar formato ISO con 'T'
-        return fields.Datetime.from_string(value.replace('T', ' '))
+
+        s = str(value).strip()
+
+        # 1) Intentar formato servidor directamente
+        try:
+            return fields.Datetime.to_datetime(s)
+        except Exception:
+            pass
+
+        # 2) Intentar ISO-8601 (T, milisegundos, Z u offset)
+        try:
+            s2 = s.replace('Z', '+00:00')
+            dt = datetime.fromisoformat(s2)  # soporta .xxx y offsets
+            if dt.tzinfo:
+                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt
+        except Exception:
+            pass
+
+        # 3) Fallback: quitar ms y cambiar T por espacio → formato servidor
+        if 'T' in s:
+            base = s.split('.')[0].replace('T', ' ')
+            try:
+                return fields.Datetime.to_datetime(base)
+            except Exception:
+                pass
+
+        # 4) Último recurso
+        return fields.Datetime.now()
+
 
     # -----------------------------------------------------------------------
     # Cálculo del listado único por tipo, más reciente
@@ -157,29 +196,21 @@ class ResPartner(models.Model):
     @api.depends('latest_document_ids')
     def _compute_document_links(self):
         for partner in self:
-            lis = []
-            for idx, doc in enumerate(partner.latest_document_ids, 1):
-                label = doc.document_type or doc.name or _('Documento')
-                href = doc.url or (f"/download/{doc.download_uuid}" if doc.download_uuid else "#")
-                lis.append(f'<li><a href="{href}" target="_blank">{idx} - {label}</a></li>')
-            partner.document_links = f"<ul>{''.join(lis)}</ul>" if lis else False
-
             latest_by_type = {}
 
-            # 1⃣  Ordena por fecha DESC
+            # 1 Ordena por fecha DESC
             docs_sorted = sorted(
                 partner.document_ids,
                 key=lambda d: self._to_datetime(d.created_by_at or d.created_at),
                 reverse=True,
             )
 
-            # 2⃣  Guarda sólo el primero de cada tipo
             for doc in docs_sorted:
                 doc_type = doc.document_type or _('Sin tipo')
                 if doc_type not in latest_by_type:
                     latest_by_type[doc_type] = doc
 
-            # 3⃣  Renderiza <ul><li>…</li></ul>
+            # 3 Renderiza <ul><li>…</li></ul>
             items = []
             for idx, (doc_type, doc) in enumerate(latest_by_type.items(), start=1):
                 href = doc.url or (f"/download/{doc.download_uuid}"
